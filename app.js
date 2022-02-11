@@ -26,13 +26,20 @@ function initCanvas(){
     }
 
     var enemies = [
-        new enemyTemplate({id : "enemy3", x: 350, y:50, w:80, h:30})
+        new enemyTemplate({id : "enemy1", x: 100, y:-20, w:80, h:30}),
+        new enemyTemplate({id : "enemy2", x: 225, y:-20, w:50, h:30}),
+        new enemyTemplate({id : "enemy3", x: 350, y:-20, w:50, h:30}),
+        new enemyTemplate({id : "enemy4", x: 100, y:-70, w:80, h:30}),
+        new enemyTemplate({id : "enemy5", x: 225, y:-70, w:80, h:30}),
+        new enemyTemplate({id : "enemy6", x: 350, y:-70, w:50, h:30}),
+        new enemyTemplate({id : "enemy7", x: 475, y:-20, w:50, h:30})
     ];
 
     var renderEnemies = function(enemyList){
         for(var i = 0; i < enemyList.length; i++){
             var enemy = enemyList[i];
             ctx.drawImage(enemy.image, enemy.x, enemy.y += .5, enemy.w, enemy.h);
+            launcher.hitDetectLowerLevel(enemy);
         }
     }
 
@@ -44,6 +51,13 @@ function initCanvas(){
         this.direction,
         this.bg = "white",
         this.misiles = [];
+
+        this.gameStatus = {
+            over: false,
+            message: "",
+            fillStyle: 'red',
+            font: 'italic bold 36px Arial, sans-serif',
+        }
 
         this.render = function(){
 
@@ -77,6 +91,13 @@ function initCanvas(){
                     this.misiles.splice(i, 1);
                 }
             }
+
+            if(enemies.length == 0){
+                clearInterval(animateInterval);
+                ctx.fillStyle = 'yellow';
+                ctx.font = this.gameStatus.font;
+                ctx.fillText('has vencido', canvasWidth * 0.5 - 80, 50);
+            }
         }
 
         this.hitDetect = function(m, mi){
@@ -86,8 +107,29 @@ function initCanvas(){
                 if(m.x <= e.x + e.w && m.x + m.w >= e.x &&
                     m.y >= e.y && m.y <= e.y + e.h){
                     enemies.splice(i, 1);
-                    document.querySelector('.barra').innerHTML = "Destroyed " + e.id;
+                    document.querySelector('.barra').innerHTML = "Increible ";
                 }
+            }
+        }
+
+        this.hitDetectLowerLevel = function(enemy){
+            if(enemy.y > 550){
+                this.gameStatus.over = true;
+                this.gameStatus.message = 'Has Perdido';
+            }
+
+            if((enemy.y < this.y + 25 && enemy.y > this.y - 25)&&
+            (enemy.x < this.x + 45 && enemy.x > this.x -45)){
+                this.gameStatus.over = true;
+                this.gameStatus.message = 'Estas muerto!'
+            }
+
+            if(this.gameStatus.over == true){
+                clearInterval(animateInterval);
+                ctx.fillStyle = this.gameStatus.fillStyle;
+                ctx.font = this.gameStatus.font;
+
+                ctx.fillText(this.gameStatus.message, canvasWidth * 0.5 - 80, 50);
             }
         }
     }
